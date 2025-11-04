@@ -94,3 +94,36 @@ Use the standard command or the auto-restart script:
 ## License
 
 MIT — Free to use and modify.
+
+---
+
+##  Connect With Me
+
+I'm actively building AI, automation & networking tools.  
+Reach out if you’d like to collaborate or contribute.
+
+<div align="left">
+
+<a href="https://github.com/mayurkoli8" target="_blank">
+<img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" />
+</a>
+
+<a href="https://www.linkedin.com/in/mayur-koli-484603215/" target="_blank">
+<img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" />
+</a>
+
+
+<a href="https://instagram.com/mentesa.live" target="_blank">
+<img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" />
+</a>
+
+<a href="mailto:kolimohit9595@gmail.com">
+<img src="https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white" />
+</a>
+
+</div>
+
+---
+
+### 💬 Want to improve this project?
+Open an issue or start a discussion — PRs welcome ⚡
