@@ -1,103 +1,68 @@
-# Sexy Audio Streamer
+# Sync Music
 
-**Stream your Windows system audio over LAN to any device via browser. No apps. No drivers. WASAPI loopback.**
+Stream your Windows PC audio to any device on your network through a browser. No apps to install, no drivers needed.
 
-## Features
+## What It Does
 
-* **Real-time PC audio streaming** to your phone, tablet, or another PC.
-* **Browser-based:** Works instantly inside any modern browser (WebAudio + WebSocket).
-* **Zero-installation on Client:** Just a web page!
-* **WASAPI Loopback:** Captures system audio output directly from the sound card, requiring **no microphone** (Stereo Mix is also supported).
-* **Multi-Client Streaming:** Stream to multiple devices simultaneously.
-* **Beautiful UI:** Clean, responsive player interface.
-* **Robust Connection:** Features auto-reconnect and queue buffering.
+- Captures system audio using WASAPI loopback (or Stereo Mix)
+- Streams to phones, tablets, or other PCs via WebSocket
+- Multiple devices can listen simultaneously
+- Auto-reconnects if connection drops
 
----
+## Requirements
 
-## Installation
+- Windows OS
+- Python 3.x
 
-### Prerequisites
+## Quick Start
 
-* Python 3.x
-* Windows OS (Required for WASAPI functionality).
+1. **Install dependencies:**
 
-### Setup Steps
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-1.  **Clone the Repository:**
-    ```bash
-    git clone https://github.com/Mayurkoli8/PartyOn.git
-    cd partyon
-    ```
-2.  **Install Dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-3.  **Enable WASAPI Loopback (Recommended):**
-    * Open your **Windows Sound Panel** (Recording tab).
-    * Ensure **"Show Disabled Devices"** is checked.
-    * Enable **"Stereo Mix,"** or verify that the main playback device's loopback functionality is accessible by the application.
+2. **Start the server:**
 
----
+   ```bash
+   python server.py
+   ```
 
-##  Usage
+   Or use `sexy audio.bat` for auto-restart on crash.
 
-### Starting the Server
+3. **Connect from any device:**
+   Open `http://<your-pc-ip>:5000` in a browser and hit Play.
 
-Use the standard command or the auto-restart script:
+## How It Works
 
-1.  **Standard Python Command:**
-    ```bash
-    python server.py
-    ```
-2.  **Windows Auto-Restart Script (Recommended):**
-    ```bash
-    sexy-audio.bat
-    ```
+| Layer         | Tech                 | Purpose                            |
+| ------------- | -------------------- | ---------------------------------- |
+| Audio Capture | sounddevice + WASAPI | Grabs system audio output          |
+| Server        | Flask + WebSockets   | Serves UI and streams audio        |
+| Client        | WebAudio API         | Decodes and plays audio in browser |
 
-### Connecting from a Client Device
+**Ports:** HTTP on `5000`, WebSocket on `8765`
 
-1.  Find your PC's **local IP Address**.
-2.  Open a browser (on any device) and navigate to:
-    ```
-    http://YOUR-PC-IP:5000
-    ```
-3.  Click the **"Play Stream"** button on the page.
+## Troubleshooting
 
----
+**No audio?**  
+Enable Stereo Mix in Windows Sound settings (Recording tab → Show Disabled Devices).
 
-## Tech Stack
+**Can't connect?**  
+Allow port 5000 through Windows Firewall.
 
-| Component | Technology | Role |
-| :--- | :--- | :--- |
-| **Backend** | Python (Flask, WebSockets, sounddevice) | Audio capture, web hosting, and stream management. |
-| **Frontend** | WebAudio API, HTML/CSS/JS | Audio decoding and playback in the client browser. |
+## Files
 
----
-
-## File Structure
-```bash
-    client.html     # Player UI
-    server.py       # Audio capture + stream server
-    sexy-audio.bat  # Auto restart batch
-    requirements.txt
-    README.md
-    LICENSE
 ```
-
----
-
-## Windows Setup Tips
-
-* **No Sound:** Confirm that a loopback device (like Stereo Mix) is **Enabled** in the Windows Sound Recording panel.
-* **Connection Errors:** Check your **Windows Firewall** settings to ensure port **5000** is open for `server.py`.
+server.py        # Audio capture and streaming server
+client.html      # Browser-based player UI
+sexy audio.bat   # Auto-restart wrapper script
+requirements.txt # Python dependencies
+```
 
 ## License
 
-MIT — Free to use and modify.
-
----
-
-##  Connect With Me
+MIT
 
 I'm actively building AI, automation & networking tools.  
 Reach out if you’d like to collaborate or contribute.
@@ -112,7 +77,6 @@ Reach out if you’d like to collaborate or contribute.
 <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" />
 </a>
 
-
 <a href="https://instagram.com/mentesa.live" target="_blank">
 <img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" />
 </a>
@@ -126,4 +90,5 @@ Reach out if you’d like to collaborate or contribute.
 ---
 
 ### 💬 Want to improve this project?
+
 Open an issue or start a discussion — PRs welcome ⚡
