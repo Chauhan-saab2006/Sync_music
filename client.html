@@ -1,232 +1,528 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sexy Audio Stream</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sync music</title>
+    <meta name="description"
+        content="Connect to the local audio stream and experience synchronized music playback instantly.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --accent: #ff0844;
+            --text-main: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.6);
+            --card-bg: rgba(25, 25, 35, 0.6);
+            --card-border: rgba(255, 255, 255, 0.08);
+        }
 
-<style>
-    :root{
-        --accent1: #00e676;
-        --accent2: #00c853;
-        --glass: rgba(255,255,255,0.06);
-        --glass-2: rgba(255,255,255,0.04);
-        --text: #eef6f9;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
 
-    *{box-sizing:border-box}
-    html,body{height:100%}
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
 
-    body {
-        margin: 0;
-        font-family: "Poppins", Arial, sans-serif;
-        background: radial-gradient(1000px 600px at 10% 20%, rgba(0,0,0,0.18), transparent),
-                    linear-gradient(135deg,#0f1724 0%,#1f1c2c 35%, #5b4666 100%);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        color: var(--text);
-        overflow: hidden;
-    }
+        /* Animated Background Orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            animation: float 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-    /* decorative animated blobs */
-    .blob{
-        position: absolute;
-        filter: blur(60px);
-        opacity: .45;
-        mix-blend-mode: screen;
-        transform: translate3d(0,0,0);
-        pointer-events: none;
-    }
+        .orb-1 {
+            width: 40px;
+            height: 400px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            top: -10%;
+            left: -10%;
+            opacity: 0.4;
+        }
 
-    .blob.b1{width:520px;height:520px;background:linear-gradient(45deg,#8c6cff,#00e5ff); left:-10%; top:-15%;}
-    .blob.b2{width:420px;height:420px;background:linear-gradient(45deg,#00e676,#00c853); right:-8%; bottom:-20%;}
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            bottom: -20%;
+            right: -10%;
+            opacity: 0.3;
+            animation-duration: 25s;
+            animation-direction: alternate-reverse;
+        }
 
-    .card {
-        width: 92%;
-        max-width: 520px;
-        padding: 30px 28px;
-        text-align: center;
-        backdrop-filter: blur(12px) saturate(120%);
-        background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
-        border-radius: 18px;
-        box-shadow: 0 30px 80px rgba(3,6,23,0.65), inset 0 1px 0 rgba(255,255,255,0.02);
-        animation: fadeIn 0.6s ease;
-        border: 1px solid rgba(255,255,255,0.04);
-        position: relative;
-        z-index: 2;
-    }
+        .orb-3 {
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(to right, var(--accent), #ffb199);
+            top: 40%;
+            left: 50%;
+            opacity: 0.2;
+            transform: translate(-50%, -50%);
+            animation-duration: 15s;
+        }
 
-    h2 {
-        font-size: 28px;
-        margin: 0 0 10px 0;
-        font-weight: 700;
-        letter-spacing: -0.4px;
-    }
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
 
-    .sub{font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:18px}
+            50% {
+                transform: translate(50px, -50px) scale(1.1);
+            }
 
-    #playBtn {
-        width: 100%;
-        padding: 16px 20px;
-        font-size: 18px;
-        border: none;
-        border-radius: 999px;
-        cursor: pointer;
-        font-weight: 700;
-        background: linear-gradient(90deg,var(--accent1), var(--accent2));
-        color: #021009;
-        transition: transform .18s ease, box-shadow .18s ease;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 8px 28px rgba(2,200,118,0.12), 0 2px 6px rgba(0,0,0,0.35);
-        display:flex;align-items:center;justify-content:center;gap:12px;
-    }
+            100% {
+                transform: translate(-30px, 30px) scale(0.9);
+            }
+        }
 
-    #playBtn:active{transform:scale(.98)}
-    #playBtn:hover{box-shadow: 0 14px 40px rgba(2,200,118,0.14)}
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 480px;
+            padding: 2.5rem 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 28px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
 
-    #playBtn .icon{
-        width:22px;height:22px;display:inline-block;
-    }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
 
-    p { margin-top: 14px; font-size: 15px; opacity: .95 }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-    #st{font-weight:700;color:var(--accent1)}
+        /* Header Area */
+        .header {
+            text-align: center;
+        }
 
-    /* ripple (kept) */
-    #playBtn:after {
-        content: "";
-        position: absolute;
-        width: 120px;
-        height: 120px;
-        background: rgba(255,255,255,0.14);
-        border-radius: 50%;
-        transform: scale(0);
-        opacity: 0;
-        pointer-events: none;
-        transition: .45s;
-    }
-    #playBtn:active:after { transform: scale(3.6); opacity: 1 }
+        .header h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #fff, #a5a5a5);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1.5px;
+        }
 
-    /* tiny waveform visual */
-    .wave{
-        margin-top:16px;
-        height:36px;
-        display:flex;gap:6px;align-items:end;justify-content:center;
-        pointer-events:none
-    }
-    .bar{width:6px;border-radius:3px;background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.12));opacity:.9;transform-origin:bottom;animation:bar 1s infinite ease-in-out}
-    .bar.b2{animation-delay:.08s;height:10px}
-    .bar.b3{animation-delay:.16s;height:18px}
-    .bar.b4{animation-delay:.24s;height:12px}
-    .bar.b5{animation-delay:.32s;height:22px}
-    @keyframes bar{0%{transform:scaleY(.35)}50%{transform:scaleY(1.0)}100%{transform:scaleY(.45)}}
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            font-weight: 300;
+        }
 
-    @keyframes fadeIn {from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+        /* Visualizer */
+        .visualizer {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            height: 90px;
+            gap: 8px;
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            box-shadow: inset 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
 
-    /* footer */
-    footer{position:fixed;left:0;right:0;bottom:18px;display:flex;justify-content:center;z-index:3}
-    .footer-badge{background:var(--glass-2);backdrop-filter:blur(8px);border-radius:999px;padding:8px 14px;border:1px solid rgba(255,255,255,0.03);display:inline-flex;gap:10px;align-items:center;font-size:13px;color:rgba(255,255,255,0.9)}
-    .footer-badge a{color:inherit;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:8px}
-    .gh{width:18px;height:18px;display:inline-block}
+        .bar {
+            width: 10px;
+            background: linear-gradient(to top, var(--secondary), var(--primary));
+            border-radius: 6px;
+            opacity: 0.2;
+            transition: all 0.3s ease;
+            height: 10%;
+        }
 
-    /* small responsive tweaks */
-    @media (max-width:420px){ .card{padding:20px;margin:14px} h2{font-size:22px} #playBtn{font-size:16px;padding:14px} }
-</style>
+        .is-playing .bar {
+            opacity: 1;
+            /* the animation simulates an audio equalizer */
+            animation: bounce 0.6s ease-in-out infinite alternate;
+        }
+
+        .is-playing .bar:nth-child(1) {
+            animation-delay: 0.1s;
+            height: 35%;
+        }
+
+        .is-playing .bar:nth-child(2) {
+            animation-delay: 0.3s;
+            height: 60%;
+        }
+
+        .is-playing .bar:nth-child(3) {
+            animation-delay: 0.0s;
+            height: 95%;
+        }
+
+        .is-playing .bar:nth-child(4) {
+            animation-delay: 0.4s;
+            height: 50%;
+        }
+
+        .is-playing .bar:nth-child(5) {
+            animation-delay: 0.2s;
+            height: 80%;
+        }
+
+        .is-playing .bar:nth-child(6) {
+            animation-delay: 0.5s;
+            height: 45%;
+        }
+
+        .is-playing .bar:nth-child(7) {
+            animation-delay: 0.1s;
+            height: 75%;
+        }
+
+        @keyframes bounce {
+            0% {
+                transform: scaleY(0.4);
+            }
+
+            100% {
+                transform: scaleY(1);
+            }
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        #playBtn {
+            position: relative;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #111;
+            border: none;
+            padding: 1.1rem 3.5rem;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 10px 25px rgba(79, 172, 254, 0.35);
+            width: 100%;
+        }
+
+        #playBtn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+            transition: all 0.5s ease;
+        }
+
+        #playBtn:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(79, 172, 254, 0.5);
+            color: #000;
+        }
+
+        #playBtn:hover::before {
+            left: 100%;
+        }
+
+        #playBtn:active {
+            transform: translateY(2px) scale(0.98);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .icon-play {
+            width: 26px;
+            height: 26px;
+            fill: currentColor;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #playBtn:hover .icon-play {
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        #playBtn.state-is-playing {
+            background: linear-gradient(135deg, #f5316e, #ff719a);
+            color: #fff;
+            box-shadow: 0 10px 25px rgba(245, 49, 110, 0.35);
+        }
+
+        #playBtn.state-is-playing:hover {
+            box-shadow: 0 15px 35px rgba(245, 49, 110, 0.5);
+        }
+
+        /* Status Badge */
+        .status-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 18px;
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ff3b30;
+            box-shadow: 0 0 12px #ff3b30;
+            transition: all 0.3s ease;
+        }
+
+        .status-dot.active {
+            background-color: #34c759;
+            box-shadow: 0 0 12px #34c759;
+        }
+
+        #st {
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: color 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .active #st {
+            color: #fff;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .footer a:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 1.5rem;
+                padding: 2rem 1.5rem;
+            }
+
+            .header h1 {
+                font-size: 2.2rem;
+            }
+
+            #playBtn {
+                padding: 1rem 2rem;
+                font-size: 1.15rem;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <div class="blob b1" aria-hidden></div>
-    <div class="blob b2" aria-hidden></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
 
-    <div class="card" role="region" aria-label="LAN Audio Stream Card">
-        <h2>Sexy Audio Stream</h2>
-        <div class="sub">Stream audio from your LAN server — click Play to connect</div>
-        
-        <button id="playBtn" aria-pressed="false" title="Play Stream">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M5 3v18l15-9L5 3z" fill="#021009" />
-            </svg>
-            <span>Play Stream</span>
-        </button>
+    <div class="container">
+        <header class="header">
+            <h1>PartyOn</h1>
+            <p>High-Fidelity Audio Synchronization</p>
+        </header>
 
-        <div class="wave" aria-hidden>
-            <div class="bar b1" style="height:14px"></div>
-            <div class="bar b2" style="height:20px"></div>
-            <div class="bar b3" style="height:26px"></div>
-            <div class="bar b4" style="height:16px"></div>
-            <div class="bar b5" style="height:22px"></div>
+        <div class="visualizer" id="visualizer">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
         </div>
 
-        <p>Status: <span id="st">Idle</span></p>
+        <div class="controls">
+            <button id="playBtn" aria-label="Start Stream">
+                <svg class="icon-play" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                </svg>
+                <span id="btnText">Connect & Play</span>
+            </button>
+
+            <div class="status-container" id="statusContainer">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="st">Disconnected</span>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>Powered by <a href="https://github.com/mayurkoli8" target="_blank">Mayur Koli</a></p>
+        </footer>
     </div>
 
-    <footer>
-        <div class="footer-badge">
-            <span>Powered by</span>
-            <a href="https://github.com/mayurkoli8" target="_blank" rel="noopener noreferrer" title="Mayur Koli on GitHub">
-                <svg class="gh" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                    <path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2 .37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.13 0 0 .67-.21 2.2.82a7.6 7.6 0 012 0c1.53-1.03 2.2-.82 2.2-.82.44 1.11.16 1.93.08 2.13.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.19 0 .21.15.46.55.38C13.71 14.53 16 11.54 16 8c0-4.42-3.58-8-8-8z"/>
-                </svg>
-                <span style="min-width:90px;text-align:left;">Mayur Koli</span>
-            </a>
-        </div>
-    </footer>
+    <script>
+        const btn = document.getElementById("playBtn");
+        const btnText = document.getElementById("btnText");
+        const st = document.getElementById("st");
+        const statusDot = document.getElementById("statusDot");
+        const statusContainer = document.getElementById("statusContainer");
+        const visualizer = document.getElementById("visualizer");
 
-<script>
-let btn = document.getElementById("playBtn");
-let st  = document.getElementById("st");
+        let ctx, ws;
+        let playTime = 0;
 
-let ctx, ws;
-let queue = [];
-let playTime = 0;
+        function updateUIState(state, text) {
+            st.innerText = text;
+            const playIcon = `<svg class="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
+            const stopIcon = `<svg class="icon-play" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
 
-btn.onclick = () => {
-    // keep original behaviour intact
-    ctx = new AudioContext({ sampleRate: 44100 });
-    ws = new WebSocket("ws://" + location.hostname + ":8765");
-    ws.binaryType = "arraybuffer";
-
-    ws.onopen = () => st.innerText = "Streaming…";
-    ws.onerror = () => st.innerText = "WebSocket Error";
-    ws.onclose = () => st.innerText = "Disconnected";
-
-    ws.onmessage = (e) => {
-        queue.push(new Int16Array(e.data));
-    };
-
-    function pump() {
-        while (queue.length > 0) {
-            let pcm = queue.shift();
-            let frames = pcm.length / 2;
-            let buf = ctx.createBuffer(2, frames, 44100);
-
-            let L = buf.getChannelData(0);
-            let R = buf.getChannelData(1);
-
-            for (let i = 0, j = 0; j < frames; j++) {
-                L[j] = pcm[i++] / 32768;
-                R[j] = pcm[i++] / 32768;
+            if (state === 'streaming') {
+                statusDot.classList.add('active');
+                statusContainer.classList.add('active');
+                visualizer.classList.add('is-playing');
+                btn.classList.add('state-is-playing');
+                btn.innerHTML = stopIcon + `<span>Stop Stream</span>`;
+            } else {
+                statusDot.classList.remove('active');
+                statusContainer.classList.remove('active');
+                visualizer.classList.remove('is-playing');
+                btn.classList.remove('state-is-playing');
+                btn.innerHTML = playIcon + `<span>Connect & Play</span>`;
             }
-
-            let src = ctx.createBufferSource();
-            src.buffer = buf;
-            src.connect(ctx.destination);
-
-            if (playTime < ctx.currentTime) {
-                playTime = ctx.currentTime + 0.10;
-            }
-
-            src.start(playTime);
-            playTime += buf.duration;
         }
 
-        requestAnimationFrame(pump);
-    }
+        btn.onclick = async () => {
+            // Re-apply ripple/bounce internally
+            btn.style.transform = 'scale(0.96)';
+            setTimeout(() => btn.style.transform = '', 150);
 
-    pump();
-};
-</script>
+            if (ws || ctx) {
+                if (ws) { ws.close(); ws = null; }
+                if (ctx) { ctx.close(); ctx = null; }
+                updateUIState('disconnected', 'Disconnected');
+                return;
+            }
+
+            playTime = 0;
+            updateUIState('connecting', 'Connecting...');
+
+            try {
+                // Handle different browser implementations for Audio Context
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                try {
+                    ctx = new AudioContextClass({ sampleRate: 44100 });
+                } catch (e) {
+                    ctx = new AudioContextClass(); // Fallback for older browsers like Safari that don't support options
+                }
+
+                // For webkitAudioContext, we may need to resume it or handle states
+                if (ctx.state === 'suspended') {
+                    await ctx.resume();
+                }
+
+                ws = new WebSocket("ws://" + location.hostname + ":8765");
+                ws.binaryType = "arraybuffer";
+
+                ws.onopen = () => {
+                    updateUIState('streaming', 'Streaming Live Audio');
+                };
+
+                ws.onerror = () => {
+                    updateUIState('error', 'Connection Error');
+                };
+
+                ws.onclose = () => {
+                    updateUIState('disconnected', 'Disconnected');
+                };
+
+                const myCtx = ctx;
+
+                ws.onmessage = (e) => {
+                    if (ctx !== myCtx) return;
+
+                    const pcm = new Int16Array(e.data);
+                    const frames = pcm.length / 2;
+                    const buf = myCtx.createBuffer(2, frames, 44100);
+                    const L = buf.getChannelData(0);
+                    const R = buf.getChannelData(1);
+
+                    // De-interleave channel data (stereo)
+                    for (let i = 0, j = 0; j < frames; j++) {
+                        L[j] = pcm[i++] / 32768;
+                        R[j] = pcm[i++] / 32768;
+                    }
+
+                    const src = myCtx.createBufferSource();
+                    src.buffer = buf;
+                    src.connect(myCtx.destination);
+
+                    if (playTime < myCtx.currentTime) {
+                        playTime = myCtx.currentTime + 0.08;
+                    }
+
+                    src.start(playTime);
+                    playTime += buf.duration;
+                };
+            } catch (err) {
+                updateUIState('error', 'Audio Init Failed');
+                console.error(err);
+            }
+        };
+    </script>
 </body>
+
 </html>
