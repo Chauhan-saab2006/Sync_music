@@ -5,6 +5,8 @@ from threading import Thread
 from flask import Flask, send_from_directory
 import sounddevice as sd
 import websockets
+import time
+import struct
 
 SAMPLE_RATE = 44100
 CHANNELS    = 2
@@ -35,8 +37,9 @@ audio_queue = q_module.Queue(maxsize=100)
 captured_channels = CHANNELS
 
 def audio_callback(indata, frames, time_info, status):
+    capture_time = time.time()
     try:
-        audio_queue.put_nowait(indata.copy())
+        audio_queue.put_nowait((indata.copy(), capture_time))
     except q_module.Full:
         pass  # Drop frames if the processing loop is too slow
 
@@ -128,20 +131,21 @@ async def audio_broadcast():
     loop = asyncio.get_event_loop()
     while True:
         # get() blocks until a frame arrives — run in executor to keep event loop free
-        frames = await loop.run_in_executor(None, audio_queue.get)
+        frames, capture_time = await loop.run_in_executor(None, audio_queue.get)
 
         # If mono, duplicate to stereo so client always receives 2-channel data
         if captured_channels == 1:
             frames = np.repeat(frames, 2, axis=1)
 
         raw = frames.tobytes()
+        packet = struct.pack('<d', capture_time) + raw
 
         if clients:
             dead = set()
             
             async def send_to_client(ws):
                 try:
-                    await ws.send(raw)
+                    await ws.send(packet)
                 except Exception:
                     dead.add(ws)
             
@@ -154,10 +158,14 @@ async def ws_handler(websocket, *args, **kwargs):
     clients.add(websocket)
     print("Client connected:", websocket.remote_address)
     try:
-        if hasattr(websocket, 'wait_closed'):
-            await websocket.wait_closed()
-        else:
-            await asyncio.Future()  # fallback for very old websockets
+        async for message in websocket:
+            if isinstance(message, str) and message.startswith("ping:"):
+                # Handle time sync ping
+                parts = message.split(":")
+                if len(parts) >= 2:
+                    client_ts = parts[1]
+                    server_ts = time.time() * 1000 # Send back milliseconds
+                    await websocket.send(f"pong:{client_ts}:{server_ts}")
     except Exception:
         pass
     print("Client disconnected:", websocket.remote_address)

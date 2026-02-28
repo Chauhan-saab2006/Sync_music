@@ -408,7 +408,7 @@
             </div>
         </div>
 
-        
+
     </div>
 
     <script>
@@ -421,6 +421,8 @@
 
         let ctx, ws;
         let playTime = 0;
+        let serverOffset = 0;
+        let ctxBaseTime = 0;
 
         function updateUIState(state, text) {
             st.innerText = text;
@@ -471,11 +473,26 @@
                     await ctx.resume();
                 }
 
+                // Track creation time for mapping to Date.now()
+                ctxBaseTime = Date.now() - (ctx.currentTime * 1000);
+
                 ws = new WebSocket("ws://" + location.hostname + ":8765");
                 ws.binaryType = "arraybuffer";
 
+                let syncCount = 0;
+                let syncOffsets = [];
+
+                function syncTime() {
+                    if (ws && ws.readyState === WebSocket.OPEN && syncCount < 5) {
+                        ws.send("ping:" + Date.now());
+                        setTimeout(syncTime, 500);
+                        syncCount++;
+                    }
+                }
+
                 ws.onopen = () => {
                     updateUIState('streaming', 'Streaming Live Audio');
+                    syncTime();
                 };
 
                 ws.onerror = () => {
@@ -489,26 +506,56 @@
                 const myCtx = ctx;
 
                 ws.onmessage = (e) => {
-                    if (ctx !== myCtx) return;
+                    if (typeof e.data === 'string') {
+                        if (e.data.startsWith("pong:")) {
+                            const parts = e.data.split(":");
+                            const clientTs = parseFloat(parts[1]);
+                            const serverTs = parseFloat(parts[2]);
+                            const now = Date.now();
+                            const rtt = now - clientTs;
+                            const currentOffset = serverTs - (clientTs + rtt / 2);
+                            syncOffsets.push(currentOffset);
+                            syncOffsets.sort((a, b) => a - b);
+                            serverOffset = syncOffsets[Math.floor(syncOffsets.length / 2)];
+                            return;
+                        }
+                    }
 
-                    const pcm = new Int16Array(e.data);
-                    const frames = pcm.length / 2;
+                    if (ctx !== myCtx) return;
+                    if (!(e.data instanceof ArrayBuffer)) return;
+
+                    const dataView = new DataView(e.data);
+                    const captureTimeSec = dataView.getFloat64(0, true);
+
+                    // PCM data starts at byte offset 8
+                    const frames = (e.data.byteLength - 8) / 4; // 2 bytes per sample, 2 channels = 4 bytes per frame
                     const buf = myCtx.createBuffer(2, frames, 44100);
                     const L = buf.getChannelData(0);
                     const R = buf.getChannelData(1);
 
-                    // De-interleave channel data (stereo)
-                    for (let i = 0, j = 0; j < frames; j++) {
-                        L[j] = pcm[i++] / 32768;
-                        R[j] = pcm[i++] / 32768;
+                    // De-interleave channel data (stereo) with explicit little-endian read
+                    for (let i = 0, offset = 8; i < frames; i++) {
+                        L[i] = dataView.getInt16(offset, true) / 32768;
+                        offset += 2;
+                        R[i] = dataView.getInt16(offset, true) / 32768;
+                        offset += 2;
                     }
 
                     const src = myCtx.createBufferSource();
                     src.buffer = buf;
                     src.connect(myCtx.destination);
 
-                    if (playTime < myCtx.currentTime) {
-                        playTime = myCtx.currentTime + 0.08;
+                    const captureLocalTime = (captureTimeSec * 1000) - serverOffset;
+                    const BUFFER_DELAY = 1000; // 1 second fixed sync buffer
+                    const targetLocalTime = captureLocalTime + BUFFER_DELAY;
+
+                    // Recompute ctxBaseTime defensively
+                    ctxBaseTime = Date.now() - (myCtx.currentTime * 1000);
+                    const targetCtxTime = (targetLocalTime - ctxBaseTime) / 1000;
+
+                    const diff = targetCtxTime - playTime;
+                    if (Math.abs(diff) > 0.1 || playTime === 0) {
+                        playTime = Math.max(myCtx.currentTime, targetCtxTime);
                     }
 
                     src.start(playTime);
