@@ -1,4 +1,5 @@
 @echo off
+call venv\Scripts\activate.bat
 :loop
 echo Starting LAN Audio Server...
 python server.py
