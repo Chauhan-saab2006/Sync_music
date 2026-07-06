@@ -28,6 +28,7 @@ Stream your Windows PC audio to any device on your network through a browser. No
    python server.py
    ```
 
+
    Or use `sexy audio.bat` for auto-restart on crash.
 
 3. **Connect from any device:**
